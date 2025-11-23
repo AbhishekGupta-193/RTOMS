@@ -41,7 +41,7 @@ handle high throughput, low latency, and fault tolerance.
 
 ---
 
-## 📦 DTOs
+##  DTOs
 
 ### **OrderRequest**
 - `customerId`
@@ -62,7 +62,7 @@ Below is the complete list of entities and fields:
 
 ---
 
-## **🧍 Customer**
+## ** Customer**
 | Field | Type | Notes |
 |------|------|-------|
 | customerId | UUID | Auto-generated |
@@ -72,7 +72,7 @@ Below is the complete list of entities and fields:
 
 ---
 
-## **🏪 Restaurant**
+## ** Restaurant**
 | Field | Type |
 |------|------|
 | restaurantId | UUID |
@@ -81,7 +81,7 @@ Below is the complete list of entities and fields:
 
 ---
 
-## **🍔 Product**
+## ** Product**
 | Field | Type |
 |------|------|
 | productId | UUID |
@@ -92,7 +92,7 @@ Below is the complete list of entities and fields:
 
 ---
 
-## **📦 Inventory**
+## ** Inventory**
 | Field | Type |
 |------|--------|
 | id | Long (PK) |
@@ -102,7 +102,7 @@ Below is the complete list of entities and fields:
 
 ---
 
-## **🧾 Order**
+## ** Order**
 | Field | Type |
 |------|--------|
 | orderId | UUID |
@@ -114,7 +114,7 @@ Below is the complete list of entities and fields:
 
 ---
 
-## **🛍 OrderItem**
+## ** OrderItem**
 | Field | Type |
 |------|--------|
 | id | Long |
@@ -126,7 +126,7 @@ Below is the complete list of entities and fields:
 ---
 
 
-## 🚀 API Endpoints
+##  API Endpoints
 
 ### **1. Place Order**
 **POST `/order/place`**  
@@ -136,6 +136,11 @@ Creates an order after validating:
 - Product belongs to restaurant  
 - Sufficient inventory for each product  
 - Deducts inventory accordingly  
+
+#### **ExampleURL**
+```json
+  localhost:8080/order/place
+```
 
 #### **RequestStructure**
 ```json
@@ -153,6 +158,7 @@ Creates an order after validating:
     }
   ]
 }
+```
 
 #### **ResponseStructure**
 ```json
@@ -173,12 +179,18 @@ Creates an order after validating:
     "totalAmount": 1000.0,
     "createdAt": "2025-11-22T22:15:31.2909979"
 }
+```
 ---
 
 ### **2. Get All Orders**
 **GET `/order/all`**  
 Returns list of all orders in the system.
 
+#### **ExampleURL**
+```json
+  localhost:8080/order/all
+```
+
 #### **ResponseStructure**
 ```json
 [
@@ -200,12 +212,18 @@ Returns list of all orders in the system.
         "createdAt": "2025-11-22T22:15:31.290998"
     }
 ]
+```
 ---
 
 ### **3. Get Orders by Customer**
 **GET `/order/{customerId}`**  
 Returns all orders placed by a specific customer.
 
+#### **ExampleURL**
+```json
+    localhost:8080/order/7e1f9b4e-8c0b-4d78-b956-683e9be51d1c
+```
+
 #### **ResponseStructure**
 ```json
 [
@@ -227,12 +245,18 @@ Returns all orders placed by a specific customer.
         "createdAt": "2025-11-22T22:15:31.290998"
     }
 ]
+```
 ---
 
 ### **4. Update Order Status (Restaurant Only)**
 **PUT `/order/{orderId}/status?restaurantId=XXX&status=STATUS_TEXT`**  
 Restaurant can update order status.  
 Examples: `PREPARING`, `OUT_FOR_DELIVERY`, `DELIVERED`
+
+#### **ExampleURL**
+```json
+    localhost:8080/order/d50955ee-84de-4978-aa1a-8c3a21189795/status?restaurantId=b8c1c44c-dfca-4340-b0b1-2ac7b219e462&status=PREPARING
+```
 
 #### **ResponseStructure**
 ```json
@@ -253,6 +277,7 @@ Examples: `PREPARING`, `OUT_FOR_DELIVERY`, `DELIVERED`
     "totalAmount": 1000.0,
     "createdAt": "2025-11-22T22:15:31.290998"
 }
+```
 ---
 
 ### **5. Cancel Order by Customer**
@@ -260,6 +285,11 @@ Examples: `PREPARING`, `OUT_FOR_DELIVERY`, `DELIVERED`
 - Only the customer who placed the order can cancel it  
 - Delivered orders cannot be cancelled  
 - Inventory is restored for all order items  
+
+#### **ExampleURL**
+```json
+    localhost:8080/order/d50955ee-84de-4978-aa1a-8c3a21189795/cancel?customerId=7e1f9b4e-8c0b-4d78-b956-683e9be51d1c
+```
 
 #### **ResponseStructure**
 ```json
@@ -280,6 +310,7 @@ Examples: `PREPARING`, `OUT_FOR_DELIVERY`, `DELIVERED`
     "totalAmount": 1000.0,
     "createdAt": "2025-11-22T22:15:31.290998"
 }
+```
 ---
 
 ##  Business Rules
