@@ -33,7 +33,7 @@ handle high throughput, low latency, and fault tolerance.
 ### **Order**
 - Created when a customer places an order  
 - Linked to customer, restaurant, and order items  
-- Tracks status (PLACED, DISPATCHED, DELIVERED, CANCELLED)
+- Tracks status (PLACED, PREPARING, OUT_FOR_DELIVERY, DELIVERED, CANCELLED)
 
 ### **OrderItem**
 - Represents each product in an order  
@@ -281,7 +281,7 @@ Examples: `PREPARING`, `OUT_FOR_DELIVERY`, `DELIVERED`
 ---
 
 ### **5. Cancel Order by Customer**
-**DELETE `/order/{orderId}/cancel?customerId=XXX`**  
+**PUT `/order/{orderId}/cancel?customerId=XXX`**  
 - Only the customer who placed the order can cancel it  
 - Delivered orders cannot be cancelled  
 - Inventory is restored for all order items  

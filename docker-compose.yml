@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: rtoms-db
+    environment:
+      POSTGRES_DB: RTOMS
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Abhibhai@123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: rtoms-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/RTOMS
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Abhibhai@123
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+
+
+#  docker compose up --build

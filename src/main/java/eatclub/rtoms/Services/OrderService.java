@@ -127,12 +127,19 @@ public class OrderService {
             throw new StatusException("Invalid status. Allowed values are: " + allowedStatuses);
         }
 
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new StatusException("Order not found with ID: " + orderId));
+
 
         if (!order.getRestaurant().getRestaurantId().equals(restaurantId)) {
             throw new StatusException("Restaurant is not authorized to update this order");
         }
+
+        if(order.getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new StatusException("Cannot update status of a cancelled order");
+        }
+
         order.setStatus(newStatus.toUpperCase());
         return orderRepository.save(order);
     }
