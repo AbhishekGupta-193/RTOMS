@@ -117,4 +117,24 @@ public class OrderService {
         return orderRepository.findByCustomer_CustomerId(customerId);
     }
 
+    //Update order status
+    @Transactional
+    public Order updateOrderStatus(UUID orderId, String newStatus, UUID restaurantId) {
+
+        List<String> allowedStatuses = List.of("PREPARING", "OUT_FOR_DELIVERY", "DELIVERED");
+
+        if (!allowedStatuses.contains(newStatus.toUpperCase())) {
+            throw new StatusException("Invalid status. Allowed values are: " + allowedStatuses);
+        }
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new StatusException("Order not found with ID: " + orderId));
+
+        if (!order.getRestaurant().getRestaurantId().equals(restaurantId)) {
+            throw new StatusException("Restaurant is not authorized to update this order");
+        }
+        order.setStatus(newStatus.toUpperCase());
+        return orderRepository.save(order);
+    }
+
 }

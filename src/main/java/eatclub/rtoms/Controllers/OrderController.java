@@ -37,5 +37,17 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrdersByCustomer(customerId));
     }
 
+    // Update Order Status by Restaurant
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<Order> updateOrderStatus(
+            @PathVariable UUID orderId,
+            @RequestParam UUID restaurantId,
+            @RequestParam String status
+    ) {
+        Order updatedOrder = orderService.updateOrderStatus(orderId, status, restaurantId);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+
 
 }
