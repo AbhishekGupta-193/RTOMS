@@ -333,4 +333,9 @@ Handled globally using:
 
 ---
 
+### Test Coverage
+
+![JaCoCo Coverage](docs/jacoco.jpg)
+
+---
 
