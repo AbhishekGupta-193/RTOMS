@@ -137,4 +137,38 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    //cancel order by customer
+    @Transactional
+    public Order cancelOrderByCustomer(UUID orderId, UUID customerId) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ProductNotFoundException("Order not found"));
+
+        if (!order.getCustomer().getCustomerId().equals(customerId)) {
+            throw new StatusException("You cannot cancel an order that does not belong to you");
+        }
+
+        if (order.getStatus().equalsIgnoreCase("DELIVERED")) {
+            throw new StatusException("Delivered orders cannot be cancelled");
+        }
+
+        List<OrderItem> orderItems = orderItemRepository.findByOrder_OrderId(orderId);
+
+        for (OrderItem item : orderItems) {
+
+            Inventory inventory = inventoryRepository.findByProduct_ProductId(
+                    item.getProduct().getProductId()
+            );
+
+            if (inventory != null) {
+                inventory.setQuantity(inventory.getQuantity() + item.getQuantity());
+                inventoryRepository.save(inventory);
+            }
+        }
+
+        order.setStatus("CANCELLED");
+        return orderRepository.save(order);
+    }
+
+
 }
