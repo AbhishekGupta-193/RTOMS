@@ -109,4 +109,12 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
+    //Get Customer Specific Orders
+    public List<Order> getOrdersByCustomer(UUID customerId) {
+        customerRepository.findById(customerId)
+                .orElseThrow(() -> new ProductNotFoundException("Customer not found with ID: " + customerId));
+
+        return orderRepository.findByCustomer_CustomerId(customerId);
+    }
+
 }

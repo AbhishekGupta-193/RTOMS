@@ -25,9 +25,16 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
 
+    // Fetch all orders
     @GetMapping("/all")
     public ResponseEntity<List<Order>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    // Fetch orders by customerId
+    @GetMapping("/{customerId}")
+    public ResponseEntity<List<Order>> getOrdersByCustomer(@PathVariable UUID customerId) {
+        return ResponseEntity.ok(orderService.getOrdersByCustomer(customerId));
     }
 
 
