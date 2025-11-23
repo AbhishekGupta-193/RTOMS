@@ -38,7 +38,7 @@ public class OrderService {
         this.restaurantRepository = restaurantRepository;
     }
 
-    //place new order
+    //Place new order
     @Transactional
     public Order placeOrder(OrderRequest request) {
         // Fetch Customer details if exists
@@ -104,6 +104,9 @@ public class OrderService {
         return orderRepository.save(savedOrder);
     }
 
-
+    //Get all orders
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
 
 }

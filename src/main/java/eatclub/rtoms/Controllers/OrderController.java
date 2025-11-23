@@ -25,4 +25,10 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Order>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+
 }
