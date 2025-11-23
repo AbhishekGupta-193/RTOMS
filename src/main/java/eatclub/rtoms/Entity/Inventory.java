@@ -1,6 +1,10 @@
 package eatclub.rtoms.Entity;
 import jakarta.persistence.*;
+import lombok.*;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "inventory")
 public class Inventory {
