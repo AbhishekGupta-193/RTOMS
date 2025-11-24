@@ -28,6 +28,9 @@ class OrderServiceTest {
     @Mock private CustomerRepository customerRepository;
     @Mock private RestaurantRepository restaurantRepository;
 
+    @Mock
+    private KafkaOrderEventProducer kafkaProducer;   // 🔥 IMPORTANT FIX
+
     @InjectMocks
     private OrderService orderService;
 
@@ -61,6 +64,9 @@ class OrderServiceTest {
         inventory = new Inventory();
         inventory.setQuantity(10);
         inventory.setProduct(product);
+
+        // Prevent Kafka from causing NPE
+        doNothing().when(kafkaProducer).sendStatusUpdateEvent(anyString());
     }
 
     // -----------------------------------------------------------
@@ -93,9 +99,6 @@ class OrderServiceTest {
         verify(orderItemRepository, times(1)).save(any());
     }
 
-    // -----------------------------------------------------------
-    // PLACE ORDER - PRODUCT NOT FOUND
-    // -----------------------------------------------------------
     @Test
     void testPlaceOrder_ProductNotFound() {
         OrderRequest request = new OrderRequest();
@@ -110,9 +113,6 @@ class OrderServiceTest {
         assertThrows(ProductNotFoundException.class, () -> orderService.placeOrder(request));
     }
 
-    // -----------------------------------------------------------
-    // PLACE ORDER - INVENTORY INSUFFICIENT
-    // -----------------------------------------------------------
     @Test
     void testPlaceOrder_InventoryException() {
         OrderRequest request = new OrderRequest();
@@ -131,9 +131,6 @@ class OrderServiceTest {
         assertThrows(InventoryException.class, () -> orderService.placeOrder(request));
     }
 
-    // -----------------------------------------------------------
-    // GET ALL ORDERS
-    // -----------------------------------------------------------
     @Test
     void testGetAllOrders() {
         when(orderRepository.findAll()).thenReturn(List.of(new Order(), new Order()));
@@ -141,9 +138,6 @@ class OrderServiceTest {
         assertEquals(2, orders.size());
     }
 
-    // -----------------------------------------------------------
-    // GET ORDERS BY CUSTOMER
-    // -----------------------------------------------------------
     @Test
     void testGetOrdersByCustomer() {
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
@@ -161,9 +155,6 @@ class OrderServiceTest {
                 orderService.getOrdersByCustomer(customerId));
     }
 
-    // -----------------------------------------------------------
-    // UPDATE ORDER STATUS - SUCCESS
-    // -----------------------------------------------------------
     @Test
     void testUpdateOrderStatusSuccess() {
         UUID orderId = UUID.randomUUID();
@@ -180,7 +171,6 @@ class OrderServiceTest {
         assertEquals("PREPARING", result.getStatus());
     }
 
-    // INVALID STATUS
     @Test
     void testUpdateOrderStatus_InvalidStatus() {
         UUID orderId = UUID.randomUUID();
@@ -189,7 +179,6 @@ class OrderServiceTest {
                 () -> orderService.updateOrderStatus(orderId, "FINISHED", restaurantId));
     }
 
-    // ORDER NOT FOUND
     @Test
     void testUpdateOrderStatus_OrderNotFound() {
         when(orderRepository.findById(any())).thenReturn(Optional.empty());
@@ -198,14 +187,13 @@ class OrderServiceTest {
                 () -> orderService.updateOrderStatus(UUID.randomUUID(), "PREPARING", restaurantId));
     }
 
-    // NOT AUTHORIZED
     @Test
     void testUpdateOrderStatus_UnauthorizedRestaurant() {
         UUID orderId = UUID.randomUUID();
 
         Order order = new Order();
         order.setOrderId(orderId);
-        order.setRestaurant(new Restaurant()); // different restaurant ID
+        order.setRestaurant(new Restaurant());
         order.getRestaurant().setRestaurantId(UUID.randomUUID());
         order.setStatus("PLACED");
 
@@ -215,9 +203,6 @@ class OrderServiceTest {
                 () -> orderService.updateOrderStatus(orderId, "PREPARING", restaurantId));
     }
 
-    // -----------------------------------------------------------
-    // CANCEL ORDER - SUCCESS
-    // -----------------------------------------------------------
     @Test
     void testCancelOrderByCustomerSuccess() {
         UUID orderId = UUID.randomUUID();
@@ -240,14 +225,13 @@ class OrderServiceTest {
         assertEquals("CANCELLED", result.getStatus());
     }
 
-    // CANCEL ORDER – WRONG CUSTOMER
     @Test
     void testCancelOrderByCustomer_Unauthorized() {
         UUID orderId = UUID.randomUUID();
 
         Order order = new Order();
         order.setOrderId(orderId);
-        order.setCustomer(new Customer()); // different customer
+        order.setCustomer(new Customer());
         order.getCustomer().setCustomerId(UUID.randomUUID());
         order.setStatus("PLACED");
 
@@ -257,7 +241,6 @@ class OrderServiceTest {
                 () -> orderService.cancelOrderByCustomer(orderId, customerId));
     }
 
-    // CANCEL ORDER – ALREADY DELIVERED
     @Test
     void testCancelOrderByCustomer_Delivered() {
         UUID orderId = UUID.randomUUID();

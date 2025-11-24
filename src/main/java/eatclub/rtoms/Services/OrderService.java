@@ -7,6 +7,7 @@ import eatclub.rtoms.Repository.*;
 import eatclub.rtoms.DTO.OrderRequest;
 import eatclub.rtoms.DTO.OrderItemRequest;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class OrderService {
 
@@ -23,19 +25,22 @@ public class OrderService {
     private final InventoryRepository inventoryRepository;
     private final CustomerRepository customerRepository;
     private final RestaurantRepository restaurantRepository;
+    private final KafkaOrderEventProducer kafkaProducer;
 
     public OrderService(OrderRepository orderRepository,
                         OrderItemRepository orderItemRepository,
                         ProductRepository productRepository,
                         InventoryRepository inventoryRepository,
                         CustomerRepository customerRepository,
-                        RestaurantRepository restaurantRepository) {
+                        RestaurantRepository restaurantRepository,
+                        KafkaOrderEventProducer kafkaProducer) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
         this.inventoryRepository = inventoryRepository;
         this.customerRepository = customerRepository;
         this.restaurantRepository = restaurantRepository;
+        this.kafkaProducer = kafkaProducer;
     }
 
     //Place new order
@@ -87,6 +92,12 @@ public class OrderService {
             // Deduct inventory
             inventory.setQuantity(inventory.getQuantity() - itemReq.getQuantity());
             inventoryRepository.save(inventory);
+
+            //Alert when inventory falls below a threshold.
+            if (inventory.getQuantity() < inventory.getThreshold()) {
+                log.warn("ALERT: Inventory low for product {}", product.getProductId());
+            }
+
 
             // Create order item
             OrderItem orderItem = new OrderItem();
@@ -141,7 +152,13 @@ public class OrderService {
         }
 
         order.setStatus(newStatus.toUpperCase());
-        return orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
+
+        // Emitting Kafka Event
+        String eventMessage = "Order " + orderId + " status updated to " + newStatus;
+        kafkaProducer.sendStatusUpdateEvent(eventMessage);
+
+        return updatedOrder;
     }
 
     //cancel order by customer
@@ -174,7 +191,13 @@ public class OrderService {
         }
 
         order.setStatus("CANCELLED");
-        return orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
+
+        // Emitting Kafka Event
+        String eventMessage = "Order " + orderId + " CANCELLED by customer " + customerId;
+        kafkaProducer.sendStatusUpdateEvent(eventMessage);
+
+        return updatedOrder;
     }
 
 

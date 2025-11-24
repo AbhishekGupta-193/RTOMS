@@ -332,7 +332,25 @@ Handled globally using:
 - Structured JSON error responses  
 
 ---
+##  kafka Integration
 
+- Real-time event streaming
+- Whenever an order's status is updated (PLACED → PREPARING → OUT_FOR_DELIVERY → DELIVERED → CANCELLED), the service emits an event to Kafka so other services can react instantly.
+- Order Updated → Kafka Producer → "order-status-topic" → Subscribers
+
+#### **Example Published Message**
+
+```json
+{
+  Order d50955ee-84de-4978-aa1a-8c3a21189795  status updated to  PREPARING
+}
+```
+```json
+{
+  Order d50955ee-84de-4978-aa1a-8c3a21189795 CANCELLED by customer 7e1f9b4e-8c0b-4d78-b956-683e9be51d1c
+}
+```
+---
 ### Test Coverage
 
 ![JaCoCo Coverage](docs/jacoco.jpg)
